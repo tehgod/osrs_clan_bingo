@@ -189,5 +189,40 @@
         "wintertodt",
         "zalcano",
         "zulrah"
+    ],
+    "Tracked_Skills":[
+        "cooking",    
+        "prayer",     
+        "thieving",    
+        "farming",   
+        "woodcutting",  
+        "fishing",     
+        "hitpoints",     
+        "agility",      
+        "mining",    
+        "runecrafting",
+        "slayer"
+    ],
+    "Tracked_Bosses":[
+        "sarachnis",
+        "chaos_fanatic",
+        "kraken",
+        "vorkath",
+        "king_black_dragon",
+        "zulrah",
+        "scorpia",
+        "vet'ion",
+        "calvar'ion",
+        "callisto",
+        "artio",
+        "alchemical_hydra",
+        "k'ril_tsutsaroth",
+        "commander_zilyana",
+        "grotesque_guardians",
+        "kalphite_queen",
+        "corporeal_beast",
+        "zalcano",
+        "thermonuclear_smoke_devil",
+        "abyssal_sire"
     ]
 }

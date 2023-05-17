@@ -9,7 +9,7 @@ from time import sleep
 
 load_dotenv("./config/.env")
 time_to_run = {"hour":4, "minute":0}
-members_list_filename = "./config/members_list.json"
+clan_memberlist_1 = "./config/members_list.json"
 categories_filename = "./config/categories.json"
 
 class clan:
@@ -280,12 +280,44 @@ class clan_json:
             case _:
                 pass
 
-def generate_daily_datasheet(clan_group, filetype="json"):
-    with open(members_list_filename) as my_json:
+def generate_daily_datasheet(clan_members_list_filepath, filetype="json"):
+    with open(clan_members_list_filepath) as my_json:
         clan_members = json.load(my_json)
     my_clan = clan(clan_members)
     todays_date = date.today().strftime("%b-%d-%Y")
     if filetype in ["json","csv"]:
         my_clan.clan_stats_to_file(todays_date, filetype)
     return True
+
+var = f"my s{time_to_run}tirng"
+
+def generate_sheets_dump(datasheet=f'./config/daily_stats/{date.today().strftime("%b-%d-%Y")}.json'):
+    with open(datasheet) as my_file:
+        data_dump = json.load(my_file)
+    with open(categories_filename) as my_file:
+        tracked_skills = json.load(my_file)["Tracked_Skills"]
+    with open(categories_filename) as my_file:
+        tracked_bosses = json.load(my_file)["Tracked_Bosses"]
+    username_list = [username for username in data_dump]
+    csv_contents = []
+    csv_contents.append(",".join(["Username"]+username_list))
+    for skill in tracked_skills:
+        xp_totals=[]
+        for user in username_list:
+            xp_totals.append(str(data_dump[user][skill]['xp']))
+        csv_contents.append(",".join([skill]+xp_totals))
+    for boss in tracked_bosses:
+        kc_totals=[]
+        for user in username_list:
+            kc_totals.append(str(data_dump[user][boss]['score']).replace("-1","0"))
+        csv_contents.append(",".join([boss]+kc_totals))
+    with open("output.csv", "w") as my_file:
+        my_file.write("\n".join(csv_contents))
+        my_file.close()
+    print("Finished writing to CSV file.")
+    return
+
+
+generate_daily_datasheet(clan_memberlist_1)
+generate_sheets_dump()
 
