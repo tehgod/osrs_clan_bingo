@@ -9,7 +9,9 @@ from time import sleep
 
 load_dotenv("./config/.env")
 time_to_run = {"hour":4, "minute":0}
-clan_memberlist_1 = "./config/members_list.json"
+team1 = "./config/team_1.json"
+team2 = "./config/team_2.json"
+team3 = "./config/team_3.json"
 categories_filename = "./config/categories.json"
 
 class clan:
@@ -289,8 +291,6 @@ def generate_daily_datasheet(clan_members_list_filepath, filetype="json"):
         my_clan.clan_stats_to_file(todays_date, filetype)
     return True
 
-var = f"my s{time_to_run}tirng"
-
 def generate_sheets_dump(datasheet=f'./config/daily_stats/{date.today().strftime("%b-%d-%Y")}.json'):
     with open(datasheet) as my_file:
         data_dump = json.load(my_file)
@@ -317,7 +317,15 @@ def generate_sheets_dump(datasheet=f'./config/daily_stats/{date.today().strftime
     print("Finished writing to CSV file.")
     return
 
+team_number = input("enter team number")
+match team_number:
+    case "1":
+        chosen_team = team1
+    case "2":
+        chosen_team = team2
+    case "3":
+        chosen_team = team3
 
-generate_daily_datasheet(clan_memberlist_1)
+generate_daily_datasheet(chosen_team)
 generate_sheets_dump()
 
