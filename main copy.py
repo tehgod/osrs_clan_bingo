@@ -7,7 +7,6 @@ import os, os.path
 from dotenv import load_dotenv
 from time import sleep
 import gspread
-from gspread.cell import Cell
 
 
 load_dotenv("./config/.env")
@@ -16,9 +15,6 @@ team1 = "./config/team_1.json"
 team2 = "./config/team_2.json"
 team3 = "./config/team_3.json"
 categories_filename = "./config/categories.json"
-spreadsheet_name = "Bingo 20th May - 3rd June"
-google_credentials = "./credentials.json"
-sheet_name = "XP/Boss KC"
 
 class clan:
     def __init__(self, members_list):
@@ -323,60 +319,17 @@ def generate_sheets_dump(datasheet=f'./config/daily_stats/{date.today().strftime
     print("Finished writing to CSV file.")
     return
 
-def update_google_sheet(spreadsheet_name, sheet_name, start_row, start_column, google_credentials, datasheet=f'./config/daily_stats/{date.today().strftime("%b-%d-%Y")}.json'):
-    with open(datasheet) as my_file:
-        data_dump = json.load(my_file)
-    with open(categories_filename) as my_file:
-        tracked_skills = json.load(my_file)["Tracked_Skills"]
-    with open(categories_filename) as my_file:
-        tracked_bosses = json.load(my_file)["Tracked_Bosses"]
-    cells = []
-    username_list = [username for username in data_dump]
-    gspread_client = gspread.service_account(filename=google_credentials)
-    worksheet= gspread_client.open(spreadsheet_name)
-    sheet = worksheet.worksheet(sheet_name)
-    current_row = start_row
-    current_column = start_column
-    cells.append(Cell(row=current_row, col=current_column, value='Username'))
-    #sheet.update_cell(current_row, current_column, "Username")
-    for username in username_list:
-        current_column+=1
-        cells.append(Cell(row=current_row, col=current_column, value=username))
-        #sheet.update_cell(current_row, current_column, username)
-    current_column = start_column
-    current_row +=1
-    for skill in tracked_skills:
-        cells.append(Cell(row=current_row, col=current_column, value=skill))
-        #sheet.update_cell(current_row, current_column, skill)
-        for user in username_list:
-            current_column+=1
-            cells.append(Cell(row=current_row, col=current_column, value=data_dump[user][skill]['xp']))
-            #sheet.update_cell(current_row, current_column, data_dump[user][skill]['xp'])
-        current_column=start_column
-        current_row+=1
-    for boss in tracked_bosses:
-        cells.append(Cell(row=current_row, col=current_column, value=boss))
-        #sheet.update_cell(current_row, current_column, boss)
-        for user in username_list:
-            current_column+=1
-            value=int(str(data_dump[user][boss]['score']).replace("-1","0"))
-            cells.append(Cell(row=current_row, col=current_column, value=value))
-            #sheet.update_cell(current_row, current_column, data_dump[user][boss]['score'].replace("-1","0"))
-        current_column=start_column
-        current_row+=1
-    sheet.update_cells(cells)
-    print('Done')
+team_number = input("enter team number")
+match team_number:
+    case "1":
+        chosen_team = team1
+    case "2":
+        chosen_team = team2
+    case "3":
+        chosen_team = team3
 
-teams = [
-    {"team_json_location":team1,"xp_grild_location":(37,2)},
-    {"team_json_location":team2,"xp_grild_location":(37,11)},
-    {"team_json_location":team3,"xp_grild_location":(37,19)}
-]
-
-for team in teams:
-    generate_daily_datasheet(team["team_json_location"])
-    update_google_sheet(spreadsheet_name, sheet_name, team["xp_grild_location"][0], team["xp_grild_location"][1], google_credentials)
-#generate_sheets_dump()
+generate_daily_datasheet(chosen_team)
+generate_sheets_dump()
 
 
 
