@@ -2,6 +2,7 @@ import os
 import discord
 from dotenv import load_dotenv
 from discord import app_commands
+from main import main_loop
 
 load_dotenv()
 token = os.getenv('DISCORD_TOKEN')
@@ -11,33 +12,35 @@ intents = discord.Intents.all()
 client = discord.Client(intents=intents)
 tree = app_commands.CommandTree(client)
 
-@tree.command(name = "update-xp", description = "Updates teams xp and scores", guild=discord.Object(id=12417128931)) #Add the guild ids in which the slash command will appear. If it should be in all, remove the argument, but note that it will take some time (up to an hour) to register the command if it's for all guilds.
+@tree.command(name = "update-xp", description = "Updates teams xp and scores", guild=discord.Object(id=my_guild_id)) #Add the guild ids in which the slash command will appear. If it should be in all, remove the argument, but note that it will take some time (up to an hour) to register the command if it's for all guilds.
 async def first_command(interaction):
-    await interaction.response.send_message("Ayyy still working on it.")
+    await interaction.response.send_message("Running update now.")
+    print(interaction)
+    main_loop(True)
+    await interaction.followup.send("Finished.")
 
+@tree.command(name = "reveal-tile", guild=discord.Object(id=my_guild_id))
+async def first_command(interaction, tile: str):
+    print(tile)
+    #main_loop(True)
+    await interaction.response.send_message(f"Revealing tile {tile}")
 
-# @client.event
-# async def on_ready():
-#     await tree.sync(guild=discord.Object(id=my_guild_id))
-#     for guild in client.guilds:
-#         print(guild)
-#         if guild.name == my_guild:
-#             break
-#     print(f'{client.user} is now connected to {guild.name}(id: {guild.id}).')
-#     text_channel_list = []
-#     for guild in client.guilds:
-#         if guild.name == my_guild:
-#             for channel in guild.text_channels:
-#                 text_channel_list.append(channel)
+#mark as completed
+#storing starting values
 
-# @tree.command(name = "commandname", description = "My first application Command", guild=discord.Object(id=12417128931)) #Add the guild ids in which the slash command will appear. If it should be in all, remove the argument, but note that it will take some time (up to an hour) to register the command if it's for all guilds.
-# async def first_command(interaction):
-#     await interaction.response.send_message("Hello!")
 
 @client.event
 async def on_ready():
     await tree.sync(guild=discord.Object(id=my_guild_id))
-    print("Ready!")
-
+    for guild in client.guilds:
+        print(guild)
+        if guild.name == my_guild:
+            break
+    print(f'{client.user} is now connected to {guild.name}(id: {guild.id}).')
+    text_channel_list = []
+    for guild in client.guilds:
+        if guild.name == my_guild:
+            for channel in guild.text_channels:
+                text_channel_list.append(channel)
 
 client.run(token)

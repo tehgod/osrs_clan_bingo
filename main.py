@@ -373,9 +373,14 @@ teams = [
     {"team_json_location":team3,"xp_grild_location":(37,19)}
 ]
 
-for team in teams:
-    generate_daily_datasheet(team["team_json_location"])
-    update_google_sheet(spreadsheet_name, sheet_name, team["xp_grild_location"][0], team["xp_grild_location"][1], google_credentials)
+def main_loop(Bool):
+    if Bool == True:
+        for team in teams:
+            generate_daily_datasheet(team["team_json_location"])
+            update_google_sheet(spreadsheet_name, sheet_name, team["xp_grild_location"][0], team["xp_grild_location"][1], google_credentials)
+
+if __name__ == "__main__":
+    main_loop(True)
 #generate_sheets_dump()
 
 
