@@ -2,7 +2,6 @@ import gspread
 import json
 import random
 from gspread.cell import Cell
-import xlsxwriter
 import string
 from time import sleep
 
@@ -53,7 +52,7 @@ class google_sheets:
         cell_formats.append(
             #bolden member names
             {
-                "range": "c1:",
+                "range": "b1:b2",
                 "format": {
                     "textFormat": {
                         "bold": True
@@ -124,6 +123,41 @@ class google_sheets:
         self.current_sheet.batch_format(cell_formats)
         pass
 
+    def format_scoreboard_2(self):
+        body = {
+            "requests": [
+                {
+                    "updateDimensionProperties": {
+                        "range": {
+                            "sheetId": self.current_sheet.id,
+                            "dimension": "COLUMNS",
+                            "startIndex": 0,
+                            "endIndex": 100
+                        },
+                        "properties": {
+                            "pixelSize": 120
+                        },
+                        "fields": "pixelSize"
+                    }
+                },
+                {
+                    "updateDimensionProperties": {
+                        "range": {
+                            "sheetId": self.current_sheet.id,
+                            "dimension": "ROWS",
+                            "startIndex": 0,
+                            "endIndex": 100
+                        },
+                        "properties": {
+                            "pixelSize": 90
+                        },
+                        "fields": "pixelSize"
+                    }
+                }
+            ]
+        }
+        self.worksheet.batch_update(body)
+
     def write_to_scoreboard(self, board_layout:dict, individual_tile:str=None):
         if self.current_sheet.title != "Scoreboard":
             try:
@@ -163,8 +197,10 @@ if __name__ == "__main__":
     generate_board_layout(board_template, tasks)
     board_layout = open_json("./board_layout.json")
     team_1_sheets = google_sheets("./credentials.json", "Team 1")
-    team_1_sheets.create_scoreboard()
-    #team_1_sheets.write_to_scoreboard(board_layout, "f7")
-    # team_1_sheets.write_to_scoreboard(board_layout, "f10")
-    team_1_sheets.format_scoreboard(board_template,board_layout)
-    team_1_sheets.write_to_scoreboard(board_layout)
+    team_1_sheets.change_to_sheet("Scoreboard")
+    # team_1_sheets.create_scoreboard()
+    # #team_1_sheets.write_to_scoreboard(board_layout, "f7")
+    # # team_1_sheets.write_to_scoreboard(board_layout, "f10")
+    # team_1_sheets.format_scoreboard(board_template,board_layout)
+    # team_1_sheets.write_to_scoreboard(board_layout)
+    team_1_sheets.format_scoreboard_2()
