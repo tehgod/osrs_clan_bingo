@@ -52,7 +52,7 @@ class google_sheets:
         cell_formats.append(
             #bolden member names
             {
-                "range": "b1:b2",
+                "range": "a1:a2",
                 "format": {
                     "textFormat": {
                         "bold": True
@@ -123,7 +123,7 @@ class google_sheets:
         self.current_sheet.batch_format(cell_formats)
         pass
 
-    def format_scoreboard_2(self):
+    def format_width_and_height(self):
         body = {
             "requests": [
                 {
@@ -189,6 +189,9 @@ class google_sheets:
         print("Successfully updated tiles.")
         return True
 
+    def create_xp_tables(self, team_list):
+        for user in team_list:
+            pass
 
 if __name__ == "__main__":
     
