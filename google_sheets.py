@@ -37,105 +37,213 @@ class google_sheets:
         self.worksheet = self.gspread_client.open(spreadsheet_name)
         self.current_sheet = self.worksheet.get_worksheet(0)
 
-    def change_to_sheet(self, sheet_name:str):
-        self.current_sheet = self.worksheet.worksheet(sheet_name)
-
-    def create_scoreboard(self):
-        if self.current_sheet.title != "Scoreboard":
+    def change_to_sheet(self, sheet_name:str, create_if_missing=False):
+        if self.current_sheet.title != sheet_name:
             try:
-                self.change_to_sheet("Scoreboard")
+                self.current_sheet = self.worksheet.worksheet(sheet_name)
             except gspread.exceptions.WorksheetNotFound:
-                self.current_sheet = self.worksheet.add_worksheet(title="Scoreboard", rows=100, cols=20)
+                if create_if_missing == True:
+                    self.current_sheet = self.worksheet.add_worksheet(title=sheet_name, rows=100, cols=20)
 
-    def format_scoreboard(self, board_template:dict, board_layout:dict):
+    def format_scoreboard_step_2(self, board_template:dict):
         cell_formats = []
-        cell_formats.append(
-            #bolden member names
-            {
-                "range": "a1:a2",
-                "format": {
-                    "textFormat": {
-                        "bold": True
+        #format all scoreboard cells and background colors
+        for category in board_template:
+            base_cell_format ={
+                "borders": {
+                    "top": {
+                        "style": "SOLID",
                     },
+                    "bottom": {
+                        "style": "SOLID",
+                    },
+                    "left": {
+                        "style": "SOLID",
+                    },
+                    "right": {
+                        "style": "SOLID",
+                    }
                 },
+                "horizontalAlignment": "CENTER",
+                "verticalAlignment": "MIDDLE",
+                "wrapStrategy": "WRAP"
+            }
+            match category:
+                case "start":
+                    base_cell_format["backgroundColor"]={
+                        "red": 0.0,
+                        "green": 1.0,
+                        "blue": 0.0
+                    }
+                    base_cell_format["textFormat"]={
+                        "bold": True,
+                        "fontSize": 20
+                    }
+                case "beginner":
+                    base_cell_format["backgroundColor"]={
+                        "red": 204/255,
+                        "green": 204/255,
+                        "blue": 204/255
+                    }
+                case "easy":
+                    base_cell_format["backgroundColor"]={
+                        "red": 217/255,
+                        "green": 234/255,
+                        "blue": 211/255
+                    }
+                case "medium":
+                    base_cell_format["backgroundColor"]={
+                        "red": 207/255,
+                        "green": 226/255,
+                        "blue": 243/255
+                    }
+                case "hard":
+                    base_cell_format["backgroundColor"]={
+                        "red": 234/255,
+                        "green": 209/255,
+                        "blue": 220/255
+                    }
+                case "elite":
+                    base_cell_format["backgroundColor"]={
+                        "red": 252/255,
+                        "green": 229/255,
+                        "blue": 205/255
+                    }
+                case "master":
+                    base_cell_format["backgroundColor"]={
+                        "red": 230/255,
+                        "green": 184/255,
+                        "blue": 175/255
+                    }
+            for cell in board_template[category]:
+                cell_formats.append(
+                    {
+                        "range": cell,
+                        "format": base_cell_format
+                    }
+                )
+        #Bolden usernames and mvp points headers
+        cell_formats.append(
+            {
+                "range": "B6:C6",
+                "format": {
+                    "textFormat":{
+                        "bold": True,
+                        "fontSize": 10
+                    },
+                    "horizontalAlignment": "CENTER",
+                    "verticalAlignment": "MIDDLE",
+                    "wrapStrategy": "WRAP"
+                }
             }
         )
-        for cell in board_layout:
-            if board_layout[cell]=="START":
-                cell_formats.append(
-                    {
-                        "range": cell,
-                        "format": {
-                            "backgroundColor": {
-                                "red": 0.0,
-                                "green": 1.0,
-                                "blue": 0.0
-                            },
-                            "borders": {
-                                "top": {
-                                    "style": "SOLID",
-                                },
-                                "bottom": {
-                                    "style": "SOLID",
-                                },
-                                "left": {
-                                    "style": "SOLID",
-                                },
-                                "right": {
-                                    "style": "SOLID",
-                                }
-                            },
-                            "textFormat": {
-                                "bold": True,
-                                "fontSize": 20
-                            },
-                            "horizontalAlignment": "CENTER",
-                            "verticalAlignment": "MIDDLE",
-                            "wrapStrategy": "WRAP"
-                        }
-                    }
-                )
-            else:
-                cell_formats.append(
-                    {
-                        "range": cell,
-                        "format": {
-                            "borders": {
-                                "top": {
-                                    "style": "SOLID",
-                                },
-                                "bottom": {
-                                    "style": "SOLID",
-                                },
-                                "left": {
-                                    "style": "SOLID",
-                                },
-                                "right": {
-                                    "style": "SOLID",
-                                }
-                            },
-                            "horizontalAlignment": "CENTER",
-                            "verticalAlignment": "MIDDLE",
-                            "wrapStrategy": "WRAP"
-                        }
-                    }
-                )
+        #bolden tasks and points values headers
+        cell_formats.append(
+            {
+                "range": "E2:E4",
+                "format": {
+                    "textFormat":{
+                        "bold": True,
+                        "fontSize": 10
+                    },
+                    "horizontalAlignment": "CENTER",
+                    "verticalAlignment": "MIDDLE",
+                    "wrapStrategy": "WRAP"
+                }
+            }
+        )
+        #bolden team name
+        cell_formats.append(
+            {
+                "range": "B2:C4",
+                "format": {
+                    "textFormat":{
+                        "bold": True,
+                        "fontSize": 28
+                    },
+                    "horizontalAlignment": "CENTER",
+                    "verticalAlignment": "MIDDLE",
+                    "wrapStrategy": "WRAP"
+                }
+            }
+        )
+        #Push all changes
         self.current_sheet.batch_format(cell_formats)
         pass
 
-    def format_width_and_height(self):
+    def format_scoreboard_step_1(self):
         body = {
             "requests": [
+                #update scoreboard columns width
+                {
+                    "updateDimensionProperties": {
+                        "range": {
+                            "sheetId": self.current_sheet.id,
+                            "dimension": "COLUMNS",
+                            "startIndex": 4,
+                            "endIndex": 100
+                        },
+                        "properties": {
+                            "pixelSize": 120
+                        },
+                        "fields": "pixelSize"
+                    }
+                },
+                #update scoreboard rows height
+                {
+                    "updateDimensionProperties": {
+                        "range": {
+                            "sheetId": self.current_sheet.id,
+                            "dimension": "ROWS",
+                            "startIndex": 5,
+                            "endIndex": 100
+                        },
+                        "properties": {
+                            "pixelSize": 90
+                        },
+                        "fields": "pixelSize"
+                    }
+                },
+                #update vertical black lines
                 {
                     "updateDimensionProperties": {
                         "range": {
                             "sheetId": self.current_sheet.id,
                             "dimension": "COLUMNS",
                             "startIndex": 0,
-                            "endIndex": 100
+                            "endIndex": 1
                         },
                         "properties": {
-                            "pixelSize": 120
+                            "pixelSize": 9
+                        },
+                        "fields": "pixelSize"
+                    }
+                },
+                {
+                    "updateDimensionProperties": {
+                        "range": {
+                            "sheetId": self.current_sheet.id,
+                            "dimension": "COLUMNS",
+                            "startIndex": 3,
+                            "endIndex": 4
+                        },
+                        "properties": {
+                            "pixelSize": 9
+                        },
+                        "fields": "pixelSize"
+                    }
+                },
+                #update horizontal black lines
+                {
+                    "updateDimensionProperties": {
+                        "range": {
+                            "sheetId": self.current_sheet.id,
+                            "dimension": "ROWS",
+                            "startIndex": 0,
+                            "endIndex": 1
+                        },
+                        "properties": {
+                            "pixelSize": 9
                         },
                         "fields": "pixelSize"
                     }
@@ -145,13 +253,26 @@ class google_sheets:
                         "range": {
                             "sheetId": self.current_sheet.id,
                             "dimension": "ROWS",
-                            "startIndex": 0,
-                            "endIndex": 100
+                            "startIndex": 4,
+                            "endIndex": 5
                         },
                         "properties": {
-                            "pixelSize": 90
+                            "pixelSize": 9
                         },
                         "fields": "pixelSize"
+                    }
+                },
+                #merge and center top left team name
+                {
+                    "mergeCells": {
+                        "mergeType": "MERGE_ALL",
+                        "range": {  # In this sample script, all cells of "A1:C3" of "Sheet1" are merged.
+                            "sheetId": self.current_sheet.id,
+                            "startRowIndex": 1,
+                            "endRowIndex": 4,
+                            "startColumnIndex": 1,
+                            "endColumnIndex": 3
+                        }
                     }
                 }
             ]
@@ -189,6 +310,8 @@ class google_sheets:
         print("Successfully updated tiles.")
         return True
 
+    def format_memberlist(self):
+        pass
     def create_xp_tables(self, team_list):
         for user in team_list:
             pass
@@ -200,10 +323,13 @@ if __name__ == "__main__":
     generate_board_layout(board_template, tasks)
     board_layout = open_json("./board_layout.json")
     team_1_sheets = google_sheets("./credentials.json", "Team 1")
-    team_1_sheets.change_to_sheet("Scoreboard")
+    team_1_sheets.change_to_sheet("Scoreboard", True)
+    #member_list = open_json("./config/all_members.json")
     # team_1_sheets.create_scoreboard()
-    # #team_1_sheets.write_to_scoreboard(board_layout, "f7")
+    #team_1_sheets.write_to_scoreboard(board_layout, "f7")
     # # team_1_sheets.write_to_scoreboard(board_layout, "f10")
     # team_1_sheets.format_scoreboard(board_template,board_layout)
     # team_1_sheets.write_to_scoreboard(board_layout)
-    team_1_sheets.format_scoreboard_2()
+    team_1_sheets.format_scoreboard_step_1()
+    team_1_sheets.format_scoreboard_step_2(board_template)
+    #print(team_1_sheets.current_sheet.acell("d7"))
