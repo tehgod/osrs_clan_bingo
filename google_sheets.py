@@ -55,7 +55,7 @@ class google_sheets:
                 self.current_sheet = self.worksheet.worksheet(sheet_name)
             except gspread.exceptions.WorksheetNotFound:
                 if create_if_missing == True:
-                    self.current_sheet = self.worksheet.add_worksheet(title=sheet_name, rows=100, cols=20)
+                    self.current_sheet = self.worksheet.add_worksheet(title=sheet_name, rows=300, cols=100)
 
     def format_scoreboard_step_1(self, members_list:dict, board_template:dict):
         #includes overall spreadsheet changes, including cell and column width, and merging cells.
@@ -196,7 +196,7 @@ class google_sheets:
                 {
                     "mergeCells": {
                         "mergeType": "MERGE_ALL",
-                        "range": {  # In this sample script, all cells of "A1:C3" of "Sheet1" are merged.
+                        "range": {
                             "sheetId": self.current_sheet.id,
                             "startRowIndex": 1,
                             "endRowIndex": 4,
@@ -558,21 +558,227 @@ class google_sheets:
         self.format_scoreboard_step_2(member_list, board_template)
         self.format_scoreboard_step_3(member_list, board_template)
 
+    def format_xp_board_step_1(self, members_list:dict, recorded_stats:list):
+        number_of_players = len(members_list)
+        end_column = get_column_letter(number_of_players+3)
+        number_of_stats = len(recorded_stats["All"])
+        body = {
+            "requests": []
+        }
+        black_bars_horizontal = [
+            f"a1:a{number_of_stats+10}",
+            f"a{number_of_stats+4}:{end_column}{number_of_stats+4}",
+            f"a{(number_of_stats*2)+7}:{end_column}{number_of_stats+7}",
+            f"a{(number_of_stats*3)+10}:{end_column}{number_of_stats+10}"
+            
+        ]
+        black_bars_vertical = [
+            f"a1:{end_column}1",
+            f"{end_column}1:{end_column}{number_of_stats+10}"
+        ]
+        body = {
+            "requests": []
+        }
+        #black vertical lines
+        body["requests"].append(
+            {
+                "updateDimensionProperties": {
+                    "range": {
+                        "sheetId": self.current_sheet.id,
+                        "dimension": "COLUMNS",
+                        "startIndex": 0,
+                        "endIndex": 1
+                    },
+                    "properties": {
+                        "pixelSize": 10
+                    },
+                    "fields": "pixelSize"
+                }
+            }
+        )
+        body["requests"].append(
+            {
+                "updateDimensionProperties": {
+                    "range": {
+                        "sheetId": self.current_sheet.id,
+                        "dimension": "COLUMNS",
+                        "startIndex": number_of_players+3,
+                        "endIndex": number_of_players+4
+                    },
+                    "properties": {
+                        "pixelSize": 10
+                    },
+                    "fields": "pixelSize"
+                }
+            }
+        )
+        #black horizontal lines
+        body["requests"].append(
+            {
+                "updateDimensionProperties": {
+                    "range": {
+                        "sheetId": self.current_sheet.id,
+                        "dimension": "ROWS",
+                        "startIndex": 0,
+                        "endIndex": 1
+                    },
+                    "properties": {
+                        "pixelSize": 10
+                    },
+                    "fields": "pixelSize"
+                }
+            }
+        )
+        body["requests"].append(
+            {
+                "updateDimensionProperties": {
+                    "range": {
+                        "sheetId": self.current_sheet.id,
+                        "dimension": "ROWS",
+                        "startIndex": number_of_stats+4,
+                        "endIndex": number_of_stats+5
+                    },
+                    "properties": {
+                        "pixelSize": 10
+                    },
+                    "fields": "pixelSize"
+                }
+            }
+        )
+        body["requests"].append(
+            {
+                "updateDimensionProperties": {
+                    "range": {
+                        "sheetId": self.current_sheet.id,
+                        "dimension": "ROWS",
+                        "startIndex": (number_of_stats*2)+6,
+                        "endIndex": (number_of_stats*2)+7
+                    },
+                    "properties": {
+                        "pixelSize": 10
+                    },
+                    "fields": "pixelSize"
+                }
+            }
+        )
+        body["requests"].append(
+            {
+                "updateDimensionProperties": {
+                    "range": {
+                        "sheetId": self.current_sheet.id,
+                        "dimension": "ROWS",
+                        "startIndex": (number_of_stats*3)+9,
+                        "endIndex": (number_of_stats*3)+10
+                    },
+                    "properties": {
+                        "pixelSize": 10
+                    },
+                    "fields": "pixelSize"
+                }
+            }
+        )
+        #merging header cells
+        body["requests"].append(
+            {
+                "mergeCells": {
+                    "mergeType": "MERGE_ALL",
+                    "range": {
+                        "sheetId": self.current_sheet.id,
+                        "startRowIndex": 1,
+                        "endRowIndex": 2,
+                        "startColumnIndex": 1,
+                        "endColumnIndex": number_of_players+2
+                    }
+                }
+            }
+        )
+        body["requests"].append(
+            {
+                "mergeCells": {
+                    "mergeType": "MERGE_ALL",
+                    "range": {
+                        "sheetId": self.current_sheet.id,
+                        "startRowIndex": (number_of_stats*2)+7,
+                        "endRowIndex": (number_of_stats*2)+8,
+                        "startColumnIndex": 1,
+                        "endColumnIndex": number_of_players+2
+                    }
+                }
+            }
+        ) 
+        body["requests"].append(
+            {
+                "mergeCells": {
+                    "mergeType": "MERGE_ALL",
+                    "range": {
+                        "sheetId": self.current_sheet.id,
+                        "startRowIndex": (number_of_stats*3)+10,
+                        "endRowIndex": (number_of_stats*3)+11,
+                        "startColumnIndex": 1,
+                        "endColumnIndex": number_of_players+2
+                    }
+                }
+            }
+        )
+        self.worksheet.batch_update(body)
+
+        pass
+    
+    def format_xp_board_step_2(self, members_list:dict, categories:list):
+        for value in members_list:
+
+            pass
+    
+    def format_xp_board_step_3(self, members_list:dict, categories:list):
+        cell_updates = []
+        number_of_categories = len(categories["All"])
+        current_row = 2
+        for x in range(3):
+            current_column = 2
+            cell_updates.append(Cell(current_row, current_column, "Beginning Values"))
+            current_row+=1
+            cell_updates.append(Cell(current_row, current_column, "Username"))
+            for member in members_list:
+                current_column+=1
+                cell_updates.append(Cell(current_row, current_column, member))
+            current_column+=1
+            cell_updates.append(Cell(current_row, current_column, "Total"))
+            current_row+=1+number_of_categories
+        self.current_sheet.update_cells(cell_updates)
+    
+    def write_to_xp_board(self, categories:dict, pulled_stats:dict, members_list:dict):
+        cell_updates = []
+        current_row = 3
+        for category in categories["All"]:
+            current_column = 2
+            current_row+=1
+            cell_updates.append(Cell(current_row, current_column, category))
+            for player in pulled_stats:
+                current_column+=1
+                try:
+                    cell_updates.append(Cell(current_row, current_column, pulled_stats[player][category]["xp"]))
+                except:
+                    cell_updates.append(Cell(current_row, current_column, pulled_stats[player][category]["score"]))
+        self.current_sheet.update_cells(cell_updates)
+    def create_rules(self):
+        pass
+
 if __name__ == "__main__":
     
     board_template = open_json("./config/board_template.json")
     tasks = open_json("./config/tasks.json")
     member_list = open_json("./config/all_members.json")
+    categories = open_json("./config/categories.json")
+    test_stats = open_json("./config/daily_stats/Jun-04-2023.json")
 
-    generate_board_layout(board_template, tasks)
+    #generate_board_layout(board_template, tasks)
     board_layout = open_json("./board_layout.json")
 
     team_1_sheets = google_sheets("./credentials.json", "Team 1")
     team_1_sheets.create_scoreboard(member_list, board_template)
-    #team_1_sheets.write_to_scoreboard(board_layout)
-    # team_1_sheets.create_scoreboard()
-    #team_1_sheets.write_to_scoreboard(board_layout, "f7")
-    # # team_1_sheets.write_to_scoreboard(board_layout, "f10")
-    # team_1_sheets.format_scoreboard(board_template,board_layout)
-    # team_1_sheets.write_to_scoreboard(board_layout)
-    #print(team_1_sheets.current_sheet.acell("d7"))
+
+    # team_1_sheets.change_to_sheet("XP Page", True)
+    # team_1_sheets.format_xp_board_step_1(member_list, categories)
+    # team_1_sheets.format_xp_board_step_3(member_list, categories)
+    # team_1_sheets.write_to_xp_board(categories, test_stats, member_list)
+    team_1_sheets.write_to_scoreboard(board_layout, "g13")
