@@ -14,7 +14,7 @@ def open_json(filepath:str):
     with open (filepath) as myfile:
         return json.load(myfile)
     
-def generate_board_layout(board_layout:dict, task_list: dict):
+def generate_board_layout(board_layout:dict, task_list: dict, output_filepath):
     generated_layout = {}
     used_tasks = []
     for task_difficulty in board_layout:
@@ -28,8 +28,14 @@ def generate_board_layout(board_layout:dict, task_list: dict):
                         used_tasks.append(random_task)
                     task = random_task
             generated_layout[tile]=task
-    with open(f"./config/generated/board_layout.json", "w") as myfile:
-        json.dump(generated_layout, myfile)
+    if type(output_filepath)==string:
+        with open(f"{output_filepath}board_layout.json", "w") as myfile:
+            json.dump(generated_layout, myfile)
+    if type(output_filepath)==list:
+        for filepath in output_filepath:
+            with open(f"{filepath}board_layout.json", "w") as myfile:
+                json.dump(generated_layout, myfile)
+
 
 class clan:
     def __init__(self, members_list):
@@ -394,14 +400,24 @@ def main_loop():
         exit()
     else:
         load_dotenv("./config/required/.env")
-        spreadsheet_name = "Bingo 20th May - 3rd June"
         categories = open_json("./config/required/categories.json")
         google_credentials = open_json("./config/required/credentials.json")
         tasks_file = open_json("./config/required/tasks.json")
         board_template = open_json("./config/required/board_template.json")
         teams_info = open_json("./config/required/teams.json")
-    if not (os.path.isfile("./config/generated/board_layout.json")):
-        #run initial setup
+        unique_team_boards = True
+        if unique_team_boards:
+            for team in teams_info:
+                if not (os.path.isfile(f"./config/generated/{team}/board_layout.json")):
+                    generate_board_layout(board_template, tasks_file, f"./config/generated/{team}/")
+        else:
+            generate_board_layout(board_template,tasks_file, [f"/config/generated/{team}/" for team in teams_info])
+        
+            #check if board(s) need initiated
+            #if boards need initiated, check if sheets need created with initial setup
+
+
+
         generate_board_layout(board_template, tasks_file)
         board_layout = open_json("./config/generated/board_layout.json")
 if __name__ == "__main__":
