@@ -1,0 +1,32 @@
+{
+    "team1":{
+        "members":[
+            "DarkMidir",
+            "LM_Ares xD",
+            "LM_Rogue",
+            "rip_2_me",
+            "lostbucketim",
+            "turtlecawk"
+        ],
+        "googlesheetname":null
+    },
+    "team2":{
+        "members":[
+            "Hun_Master",
+            "DarakX",
+            "Explodium",
+            "tiny_buddha"
+        ],
+        "googlesheetname":null
+    },
+    "team3":{
+        "members":[
+            "Herrmann3",
+            "Kasdeya_x",
+            "q_p-W_phil",
+            "Winter_h2o",
+            "never olmlet"
+        ],
+        "googlesheetname":null
+    }
+}
