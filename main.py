@@ -10,10 +10,15 @@ import gspread
 from gspread.cell import Cell
 from google_sheets import *
 
+def open_json(filepath:str):
+    with open (filepath) as myfile:
+        return json.load(myfile)
+    
 def generate_board_layout(board_layout:dict, task_list: dict):
     generated_layout = {}
     used_tasks = []
     for task_difficulty in board_layout:
+        print(task_difficulty)
         for tile in board_layout[task_difficulty]:
             task = False
             while task == False:
@@ -390,17 +395,17 @@ def main_loop():
     else:
         load_dotenv("./config/required/.env")
         spreadsheet_name = "Bingo 20th May - 3rd June"
-        team1 = "./config/team_1.json"
-        team2 = "./config/team_2.json"
-        team3 = "./config/team_3.json"
-        categories_filename = "./config/required/categories.json"
-        google_credentials = "./config/required/credentials.json"
-        tasks_file = "./config/required/tasks.json"
-        board_template = "./config/required/board_template.json"
+        team1 = open_json("./config/required/team_1.json")
+        team2 = open_json("./config/required/team_2.json")
+        team3 = open_json("./config/required/team_3.json")
+        categories = open_json("./config/required/categories.json")
+        google_credentials = open_json("./config/required/credentials.json")
+        tasks_file = open_json("./config/required/tasks.json")
+        board_template = open_json("./config/required/board_template.json")
     if not (os.path.isfile("./config/generated/board_layout.json")):
         #run initial setup
         generate_board_layout(board_template, tasks_file)
-        board_layout = open_json("./config/required/board_layout.json")
+        board_layout = open_json("./config/generated/board_layout.json")
 
 if __name__ == "__main__":
     main_loop()
