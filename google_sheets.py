@@ -569,7 +569,6 @@ class google_sheets:
                 valid_surrounding_tiles.append(tile)
         self.write_to_scoreboard(board_layout, valid_surrounding_tiles)            
 
-
     def create_scoreboard(self, members_list:dict, board_template:dict):
         self.change_to_sheet("Scoreboard", True)
         self.format_scoreboard_step_1(member_list, board_template)

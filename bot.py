@@ -56,7 +56,6 @@ async def first_command(interaction, tile: str):
 
 @tree.command(name = "reveal-tile", guild=discord.Object(id=my_guild_id))
 async def first_command(interaction, tile: str):
-    
     requestor_info = approver_status(interaction.user.id)
     if requestor_info["approver"]==True:
         await interaction.response.send_message(f"Revealing tile {tile}")
