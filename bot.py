@@ -44,19 +44,27 @@ async def first_command(interaction):
 
 @tree.command(name = "complete-tile", guild=discord.Object(id=my_guild_id))
 async def first_command(interaction, tile: str):
-    print(tile)
-    #main_loop(True)
-    await interaction.response.send_message(f"Revealing tile {tile}")
-
-@tree.command(name = "reveal-tile", guild=discord.Object(id=my_guild_id))
-async def first_command(interaction, tile: str):
     requestor_info = approver_status(interaction.user.id)
     if requestor_info["approver"]==True:
         with open(f"./config/generated/{requestor_info['team_name']}/board_layout.json") as myfile:
             board_layout=json.load(myfile)
         team_sheet = google_sheets("./config/required/credentials.json", requestor_info["sheet_url"])
+        team_sheet.complete_tile(board_layout,tile)
+        await interaction.response.send_message(f"Completed tile {tile}")
+    else:
+        await interaction.response.send_message(f"Incorrect permissions. You need admin permissions for this command")
+
+@tree.command(name = "reveal-tile", guild=discord.Object(id=my_guild_id))
+async def first_command(interaction, tile: str):
+    
+    requestor_info = approver_status(interaction.user.id)
+    if requestor_info["approver"]==True:
+        await interaction.response.send_message(f"Revealing tile {tile}")
+        with open(f"./config/generated/{requestor_info['team_name']}/board_layout.json") as myfile:
+            board_layout=json.load(myfile)
+        team_sheet = google_sheets("./config/required/credentials.json", requestor_info["sheet_url"])
         team_sheet.write_to_scoreboard(board_layout,tile)
-        await interaction.response.send_message(f"Revealed tile {tile}")
+        await interaction.followup.send(f"Finished")
     else:
         await interaction.response.send_message(f"Incorrect permissions. You need admin permissions for this command")
 

@@ -539,8 +539,14 @@ class google_sheets:
         return True
 
     def complete_tile(self, board_layout:dict, individual_tile:str=None):
-        cell_update = [{
-            "range": f"{individual_tile}",
+        if self.current_sheet.title != "Scoreboard":
+            try:
+                self.change_to_sheet("Scoreboard")
+            except gspread.exceptions.WorksheetNotFound:
+                print("No scoreboard located to write value to.")
+                return False
+        cell_update = {
+            "range": individual_tile,
             "format": {
                 "backgroundColor": {
                     "red": 0/255,
@@ -548,14 +554,14 @@ class google_sheets:
                     "blue": 0/255
                 }
             }
-        }]
-        self.current_sheet.batch_format(cell_update)
+        }
+        self.current_sheet.batch_format([cell_update])
         original_tile = self.a1_to_row_col(individual_tile)
         surrounding_tiles=[
-            f"{get_column_letter(original_tile['column']-1)}{original_tile['row']}",
-            f"{get_column_letter(original_tile['column']+1)}{original_tile['row']}",
-            f"{get_column_letter(original_tile['column'])}{original_tile['row']-1}",
-            f"{get_column_letter(original_tile['column'])}{original_tile['row']+1}"
+            f"{get_column_letter(original_tile['column']-1)}{original_tile['row']}".lower(),
+            f"{get_column_letter(original_tile['column']+1)}{original_tile['row']}".lower(),
+            f"{get_column_letter(original_tile['column'])}{original_tile['row']-1}".lower(),
+            f"{get_column_letter(original_tile['column'])}{original_tile['row']+1}".lower()
         ]
         valid_surrounding_tiles = []
         for tile in surrounding_tiles:
@@ -849,16 +855,17 @@ class google_sheets:
 
 
 if __name__ == "__main__":
-    member_list = open_json("./config/required/all_members.json")
-    categories = open_json("./config/required/categories.json")
-    test_stats = open_json("./config/daily_stats/May-17-2023.json")
-    board_template = open_json("./config/required/board_template.json")
+    # member_list = open_json("./config/required/all_members.json")
+    # categories = open_json("./config/required/categories.json")
+    # test_stats = open_json("./config/daily_stats/May-17-2023.json")
+    # board_template = open_json("./config/required/board_template.json")
     board_layout = open_json("./config/generated/team1/board_layout.json")
     
     team_1_sheets = google_sheets("./config/required/credentials.json", "Team 1")
 
-    team_1_sheets.create_scoreboard(member_list, board_template)
-    team_1_sheets.create_xp_board(members_list=member_list, categories=categories, pulled_stats=None)
+    # team_1_sheets.create_scoreboard(member_list, board_template)
+    # team_1_sheets.create_xp_board(members_list=member_list, categories=categories, pulled_stats=None)
 
     #team_1_sheets.update_current_xp(pulled_stats=test_stats, categories=categories)
     #team_1_sheets.write_to_scoreboard(board_layout, "h10")
+    team_1_sheets.complete_tile(board_layout, "j9")
