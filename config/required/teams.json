@@ -8,7 +8,10 @@
             "lostbucketim",
             "turtlecawk"
         ],
-        "googlesheetname":null
+        "approvers":[
+            154928689119756288
+        ],
+        "googlesheetname":"Team 1"
     },
     "team2":{
         "members":[
@@ -17,7 +20,10 @@
             "Explodium",
             "tiny_buddha"
         ],
-        "googlesheetname":null
+        "approvers":[
+            0
+        ],
+        "googlesheetname":"Team 2"
     },
     "team3":{
         "members":[
@@ -27,6 +33,9 @@
             "Winter_h2o",
             "never olmlet"
         ],
-        "googlesheetname":null
+        "approvers":[
+            "Herrmann3"
+        ],
+        "googlesheetname":"Team 3"
     }
 }
