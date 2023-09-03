@@ -825,12 +825,12 @@ if __name__ == "__main__":
     categories = open_json("./config/required/categories.json")
     test_stats = open_json("./config/daily_stats/May-17-2023.json")
     board_template = open_json("./config/required/board_template.json")
-    board_layout = open_json("./generated/board_layout.json")
+    board_layout = open_json("./config/generated/team1/board_layout.json")
     
-    team_1_sheets = google_sheets("./credentials.json", "Team 1")
+    team_1_sheets = google_sheets("./config/required/credentials.json", "Team 1")
 
     team_1_sheets.create_scoreboard(member_list, board_template)
-    team_1_sheets.create_xp_board(members_list=member_list, categories=categories, pulled_stats=test_stats)
+    team_1_sheets.create_xp_board(members_list=member_list, categories=categories, pulled_stats=None)
 
-    team_1_sheets.update_current_xp(pulled_stats=test_stats, categories=categories)
-    team_1_sheets.write_to_scoreboard(board_layout, "h10")
+    #team_1_sheets.update_current_xp(pulled_stats=test_stats, categories=categories)
+    #team_1_sheets.write_to_scoreboard(board_layout, "h10")

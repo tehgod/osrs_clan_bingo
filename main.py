@@ -39,6 +39,8 @@ def generate_board_layout(board_layout:dict, task_list: dict, output_filepath):
                 print('board generated')
 
 
+
+
 class clan:
     def __init__(self, members_list):
         self.clan_list = []
@@ -386,13 +388,9 @@ def update_google_sheet(spreadsheet_name, sheet_name, start_row, start_column, g
     sheet.update_cells(cells)
     print('Done')
 
-# teams = [
-#     {"team_json_location":team1,"xp_grild_location":(37,2)},
-#     {"team_json_location":team2,"xp_grild_location":(37,11)},
-#     {"team_json_location":team3,"xp_grild_location":(37,19)}
-# ]
 
-def main_loop():
+
+def initial_setup():
     if not (os.path.isfile("./config/required/.env") and
     os.path.isfile("./config/required/tasks.json") and
     os.path.isfile("./config/required/board_template.json") and
@@ -417,7 +415,8 @@ def main_loop():
                     print('dab')
         else:
             generate_board_layout(board_template,tasks_file, [f"/config/generated/{team}/" for team in teams_info])
-        
+
+
             #check if board(s) need initiated
             #if boards need initiated, check if sheets need created with initial setup
 
