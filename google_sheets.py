@@ -821,11 +821,11 @@ class google_sheets:
 
 
 if __name__ == "__main__":
-    member_list = open_json("./config/team_1.json")
-    categories = open_json("./config/categories.json")
+    member_list = open_json("./config/required/all_members.json")
+    categories = open_json("./config/required/categories.json")
     test_stats = open_json("./config/daily_stats/Aug-21-2023.json")
-    board_template = open_json("./config/board_template.json")
-    board_layout = open_json("./board_layout.json")
+    board_template = open_json("./config/required/board_template.json")
+    board_layout = open_json("./generated/board_layout.json")
     
     team_1_sheets = google_sheets("./credentials.json", "Team 1")
 
