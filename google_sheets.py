@@ -513,7 +513,7 @@ class google_sheets:
         self.current_sheet.update_cells(cell_updates)
         pass
 
-    def write_to_scoreboard(self, board_layout:dict, individual_tile:str=None):
+    def write_to_scoreboard(self, board_layout:dict, individual_tile=None):
         if self.current_sheet.title != "Scoreboard":
             try:
                 self.change_to_sheet("Scoreboard")
@@ -524,8 +524,10 @@ class google_sheets:
         tiles_to_update = []
         if individual_tile==None:
             tiles_to_update = [tile for tile in board_layout]
-        elif individual_tile in [tile for tile in board_layout]:
+        elif (individual_tile in [tile for tile in board_layout]) and type(individual_tile)==str:
             tiles_to_update.append(individual_tile)
+        elif type(individual_tile)==list:
+            tiles_to_update=individual_tile
         else:
             print("Inavlid tile selected")
             return False
@@ -535,6 +537,32 @@ class google_sheets:
         self.current_sheet.update_cells(cells)
         print("Successfully updated tiles.")
         return True
+
+    def complete_tile(self, board_layout:dict, individual_tile:str=None):
+        cell_update = [{
+            "range": f"{individual_tile}",
+            "format": {
+                "backgroundColor": {
+                    "red": 0/255,
+                    "green": 255/255,
+                    "blue": 0/255
+                }
+            }
+        }]
+        self.current_sheet.batch_format(cell_update)
+        original_tile = self.a1_to_row_col(individual_tile)
+        surrounding_tiles=[
+            f"{get_column_letter(original_tile['column']-1)}{original_tile['row']}",
+            f"{get_column_letter(original_tile['column']+1)}{original_tile['row']}",
+            f"{get_column_letter(original_tile['column'])}{original_tile['row']-1}",
+            f"{get_column_letter(original_tile['column'])}{original_tile['row']+1}"
+        ]
+        valid_surrounding_tiles = []
+        for tile in surrounding_tiles:
+            if tile in [tile for tile in board_layout]:
+                valid_surrounding_tiles.append(tile)
+        self.write_to_scoreboard(board_layout, valid_surrounding_tiles)            
+
 
     def create_scoreboard(self, members_list:dict, board_template:dict):
         self.change_to_sheet("Scoreboard", True)
