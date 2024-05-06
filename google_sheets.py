@@ -537,7 +537,7 @@ class google_sheets:
         print("Successfully updated tiles.")
         return True
 
-    def complete_tile(self, board_layout:list, individual_tile:str=None):
+    def complete_tile(self, board_layout:list, individual_tile:str):
         if self.current_sheet.title != "Scoreboard":
             try:
                 self.change_to_sheet("Scoreboard")
@@ -570,9 +570,9 @@ class google_sheets:
 
     def create_scoreboard(self, members_list:dict, board_template:dict):
         self.change_to_sheet("Scoreboard", True)
-        self.format_scoreboard_step_1(member_list, board_template)
-        self.format_scoreboard_step_2(member_list, board_template)
-        self.format_scoreboard_step_3(member_list, board_template)
+        self.format_scoreboard_step_1(members_list, board_template)
+        self.format_scoreboard_step_2(members_list, board_template)
+        self.format_scoreboard_step_3(members_list, board_template)
 
     def create_rules(self):
         pass
@@ -587,3 +587,4 @@ if __name__ == "__main__":
 
     team_1_sheets.create_scoreboard(member_list, board_template)
     team_1_sheets.complete_tile(board_layout, "i10")
+    team_1_sheets.write_to_scoreboard(board_layout, "i13")

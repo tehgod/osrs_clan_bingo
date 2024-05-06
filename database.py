@@ -37,6 +37,7 @@ class database_connection:
         base_query = """SELECT * from BingoTeamMembers bt"""
         if team_number != None:
             base_query += f" WHERE Team = {team_number}"
+        base_query += " ORDER BY Team, Username"
         self.load_engine()
         result = pd.read_sql(base_query, self.engine)
         self.engine.dispose()
@@ -77,6 +78,18 @@ class database_connection:
 
         return database_connection.df_to_dict(result)
     
+    def update_task_progress(self, team_number, task_id, completion_status):
+        try:
+            self.load_engine()
+            with self.engine.connect() as con:
+                con.execute(text(f"""Update BingoCurrentLayouts SET Status = {completion_status} where Team = {team_number} and TaskId = {task_id}"""))
+                con.commit()
+            return True
+        except:
+            return False
+
+
+
 if __name__ == "__main__":
     my_db = database_connection()
-    print(my_db.load_team_credentials(1))
+    print(my_db.update_task_progress(1, 7, 1))
