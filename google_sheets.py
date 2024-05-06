@@ -53,11 +53,9 @@ class google_sheets:
                     lowest_row=cell_location["row"]
                 if cell_location["column"]>furthest_column:
                     furthest_column=cell_location["column"]
-        current_member_row = 6
-        for member in members_list:
-            current_member_row +=1
-        if current_member_row >lowest_row:
-            lowest_row=current_member_row
+        last_member_row = 6+len(members_list)
+        if last_member_row > lowest_row:
+            lowest_row = last_member_row
         body = {
             "requests": [
                 #update scoreboard columns width
@@ -341,7 +339,7 @@ class google_sheets:
                 lowest_row=cell_location["row"]
             if cell_location["column"]>furthest_column:
                 furthest_column=cell_location["column"]
-        last_member_row = 6+len(member_list)
+        last_member_row = 6+len(members_list)
         if last_member_row >lowest_row:
             lowest_row=last_member_row
         furthest_column+=1
@@ -484,7 +482,7 @@ class google_sheets:
         current_row = 6
         for member in members_list:
             current_row+=1
-            cell_updates.append(Cell(current_row, 2, member))
+            cell_updates.append(Cell(current_row, 2, member["Username"]))
         #add text for tiles, points, and respective headers
         cell_updates.append(Cell(2, 5, "Task"))
         cell_updates.append(Cell(2, 6, "Beginner"))
@@ -512,7 +510,7 @@ class google_sheets:
         self.current_sheet.update_cells(cell_updates)
         pass
 
-    def write_to_scoreboard(self, board_layout:dict, individual_tile=None):
+    def write_to_scoreboard(self, board_layout:list, individual_tile=None):
         if self.current_sheet.title != "Scoreboard":
             try:
                 self.change_to_sheet("Scoreboard")
@@ -522,22 +520,23 @@ class google_sheets:
         cells = []
         tiles_to_update = []
         if individual_tile==None:
-            tiles_to_update = [tile for tile in board_layout]
-        elif (individual_tile in [tile for tile in board_layout]) and type(individual_tile)==str:
+            tiles_to_update = [tile["Cell"] for tile in board_layout]
+        elif (individual_tile in [tile["Cell"] for tile in board_layout]) and type(individual_tile)==str:
             tiles_to_update.append(individual_tile)
         elif type(individual_tile)==list:
             tiles_to_update=individual_tile
         else:
             print("Inavlid tile selected")
             return False
-        for tile in tiles_to_update:
-            cell_location = self.a1_to_row_col(tile)
-            cells.append(Cell(cell_location["row"], cell_location["column"], board_layout[tile]))
+        for tile_information in board_layout:
+            if tile_information["Cell"] in tiles_to_update:
+                cell_location = self.a1_to_row_col(tile_information["Cell"])
+                cells.append(Cell(cell_location["row"], cell_location["column"], tile_information["Task"]))
         self.current_sheet.update_cells(cells)
         print("Successfully updated tiles.")
         return True
 
-    def complete_tile(self, board_layout:dict, individual_tile:str=None):
+    def complete_tile(self, board_layout:list, individual_tile:str=None):
         if self.current_sheet.title != "Scoreboard":
             try:
                 self.change_to_sheet("Scoreboard")
@@ -564,7 +563,7 @@ class google_sheets:
         ]
         valid_surrounding_tiles = []
         for tile in surrounding_tiles:
-            if tile in [tile for tile in board_layout]:
+            if tile in [tile["Cell"] for tile in board_layout]:
                 valid_surrounding_tiles.append(tile)
         self.write_to_scoreboard(board_layout, valid_surrounding_tiles)            
 
@@ -577,18 +576,12 @@ class google_sheets:
     def create_rules(self):
         pass
 
-
 if __name__ == "__main__":
     my_db = database_connection()
-    member_list = open_json("./config/required/all_members.json")
-    categories = open_json("./config/required/categories.json")
-    board_layout = open_json("./config/generated/team1/board_layout.json")
+    member_list = database_connection.df_to_dict(my_db.load_team_members(1))
+    board_layout = database_connection.df_to_dict(my_db.load_board_layout(1))
     board_template = database_connection.df_to_dict(my_db.load_template(1))
     team_1_sheets = google_sheets("./config/required/credentials.json", "Team 1")
 
     team_1_sheets.create_scoreboard(member_list, board_template)
-    # team_1_sheets.create_xp_board(members_list=member_list, categories=categories, pulled_stats=None)
-
-    #team_1_sheets.update_current_xp(pulled_stats=test_stats, categories=categories)
-    # team_1_sheets.write_to_scoreboard(board_layout, "h8")
     team_1_sheets.complete_tile(board_layout, "i10")
