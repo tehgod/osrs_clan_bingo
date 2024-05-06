@@ -39,8 +39,6 @@ def generate_board_layout(board_layout:dict, task_list: dict, output_filepath):
                 print('board generated')
 
 
-
-
 class clan:
     def __init__(self, members_list):
         self.clan_list = []
@@ -423,7 +421,7 @@ def initial_setup():
 
         #board_layout = open_json("./config/generated/board_layout.json")
 if __name__ == "__main__":
-    main_loop()
+    initial_setup()
 
 
 

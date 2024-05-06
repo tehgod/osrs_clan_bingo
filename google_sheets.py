@@ -5,6 +5,7 @@ from gspread.cell import Cell
 import string
 from time import sleep
 from openpyxl.utils import get_column_letter
+from database import *
 
 def open_json(filepath:str):
     with open (filepath) as myfile:
@@ -41,14 +42,13 @@ class google_sheets:
                 if create_if_missing == True:
                     self.current_sheet = self.worksheet.add_worksheet(title=sheet_name, rows=300, cols=100)
 
-    def format_scoreboard_step_1(self, members_list:dict, board_template:dict):
+    def format_scoreboard_step_1(self, members_list:dict, board_template:list):
         #includes overall spreadsheet changes, including cell and column width, and merging cells.
         #determine max width and height of board
         furthest_column = 0
         lowest_row = 0
-        for category in board_template:
-            for cell in board_template[category]:
-                cell_location = self.a1_to_row_col(cell)
+        for cell in board_template:
+                cell_location = self.a1_to_row_col(cell["Cell"])
                 if cell_location["row"]>lowest_row:
                     lowest_row=cell_location["row"]
                 if cell_location["column"]>furthest_column:
@@ -193,84 +193,85 @@ class google_sheets:
         }
         self.worksheet.batch_update(body)
 
-    def format_scoreboard_step_2(self, members_list:dict, board_template:dict):
+    def format_scoreboard_step_2(self, members_list:dict, board_template:list):
         #Includes any text and specific cell FORMATTING such as coloring,bolding, and text wrapping
         cell_formats = []
         #format all scoreboard cells and background colors
-        for category in board_template:
-            base_cell_format ={
-                "borders": {
-                    "top": {
-                        "style": "SOLID",
-                    },
-                    "bottom": {
-                        "style": "SOLID",
-                    },
-                    "left": {
-                        "style": "SOLID",
-                    },
-                    "right": {
-                        "style": "SOLID",
-                    }
+        base_cell_format ={
+            "borders": {
+                "top": {
+                    "style": "SOLID",
                 },
-                "horizontalAlignment": "CENTER",
-                "verticalAlignment": "MIDDLE",
-                "wrapStrategy": "WRAP"
-            }
-            match category:
-                case "start":
-                    base_cell_format["backgroundColor"]={
+                "bottom": {
+                    "style": "SOLID",
+                },
+                "left": {
+                    "style": "SOLID",
+                },
+                "right": {
+                    "style": "SOLID",
+                }
+            },
+            "horizontalAlignment": "CENTER",
+            "verticalAlignment": "MIDDLE",
+            "wrapStrategy": "WRAP"
+        }
+
+        for cell in board_template:
+            current_cell_format = base_cell_format.copy()
+            match cell["Difficulty"]:
+                case "Start":
+                    current_cell_format["backgroundColor"]={
                         "red": 0.0,
                         "green": 1.0,
                         "blue": 0.0
                     }
-                    base_cell_format["textFormat"]={
+                    current_cell_format["textFormat"]={
                         "bold": True,
                         "fontSize": 20
                     }
-                case "beginner":
-                    base_cell_format["backgroundColor"]={
+                case "Beginner":
+                    current_cell_format["backgroundColor"]={
                         "red": 204/255,
                         "green": 204/255,
                         "blue": 204/255
                     }
-                case "easy":
-                    base_cell_format["backgroundColor"]={
+                case "Easy":
+                    current_cell_format["backgroundColor"]={
                         "red": 217/255,
                         "green": 234/255,
                         "blue": 211/255
                     }
-                case "medium":
-                    base_cell_format["backgroundColor"]={
+                case "Medium":
+                    current_cell_format["backgroundColor"]={
                         "red": 207/255,
                         "green": 226/255,
                         "blue": 243/255
                     }
-                case "hard":
-                    base_cell_format["backgroundColor"]={
+                case "Hard":
+                    current_cell_format["backgroundColor"]={
                         "red": 234/255,
                         "green": 209/255,
                         "blue": 220/255
                     }
-                case "elite":
-                    base_cell_format["backgroundColor"]={
+                case "Elite":
+                    current_cell_format["backgroundColor"]={
                         "red": 252/255,
                         "green": 229/255,
                         "blue": 205/255
                     }
-                case "master":
-                    base_cell_format["backgroundColor"]={
+                case "Master":
+                    current_cell_format["backgroundColor"]={
                         "red": 230/255,
                         "green": 184/255,
                         "blue": 175/255
                     }
-            for cell in board_template[category]:
-                cell_formats.append(
-                    {
-                        "range": cell,
-                        "format": base_cell_format
-                    }
-                )
+            cell_formats.append(
+                {
+                    "range": cell["Cell"],
+                    "format": current_cell_format
+                }
+            )
         #Bolden usernames and mvp points headers
         cell_formats.append(
             {
@@ -334,18 +335,15 @@ class google_sheets:
         #determine max width and height of board
         furthest_column = 0
         lowest_row = 0
-        for category in board_template:
-            for cell in board_template[category]:
-                cell_location = self.a1_to_row_col(cell)
-                if cell_location["row"]>lowest_row:
-                    lowest_row=cell_location["row"]
-                if cell_location["column"]>furthest_column:
-                    furthest_column=cell_location["column"]
-        current_member_row = 6
-        for member in members_list:
-            current_member_row +=1
-        if current_member_row >lowest_row:
-            lowest_row=current_member_row
+        for cell in board_template:
+            cell_location = self.a1_to_row_col(cell["Cell"])
+            if cell_location["row"]>lowest_row:
+                lowest_row=cell_location["row"]
+            if cell_location["column"]>furthest_column:
+                furthest_column=cell_location["column"]
+        last_member_row = 6+len(member_list)
+        if last_member_row >lowest_row:
+            lowest_row=last_member_row
         furthest_column+=1
         lowest_row+=1
         furthest_column_letter = get_column_letter(furthest_column)
@@ -376,7 +374,7 @@ class google_sheets:
         )
         #set headers and other value colors in value board
         ranges = {
-            "names":f"b7:c{str(current_member_row)}",
+            "names":f"b7:c{str(last_member_row)}",
             "beginner":"f2:f4",
             "easy":"g2:g4",
             "medium":"h2:h4",
@@ -507,9 +505,10 @@ class google_sheets:
         #add text for team name
         cell_updates.append(Cell(2, 2, self.worksheet.title))
         #add text for start tile
-        for tile in board_template["start"]:
-            tile_location = self.a1_to_row_col(tile)
-            cell_updates.append(Cell(tile_location["row"], tile_location["column"], "START"))
+        for tile in board_template:
+            if tile["Difficulty"]=="Start":
+                tile_location = self.a1_to_row_col(tile["Cell"])
+                cell_updates.append(Cell(tile_location["row"], tile_location["column"], "START"))
         self.current_sheet.update_cells(cell_updates)
         pass
 
@@ -575,296 +574,21 @@ class google_sheets:
         self.format_scoreboard_step_2(member_list, board_template)
         self.format_scoreboard_step_3(member_list, board_template)
 
-    def format_xp_board_step_1(self, members_list:dict, recorded_stats:list):
-        number_of_players = len(members_list)
-        end_column = get_column_letter(number_of_players+3)
-        number_of_stats = len(recorded_stats["All"])
-        body = {
-            "requests": []
-        }
-        black_bars_horizontal = [
-            f"a1:a{number_of_stats+10}",
-            f"a{number_of_stats+4}:{end_column}{number_of_stats+4}",
-            f"a{(number_of_stats*2)+7}:{end_column}{number_of_stats+7}",
-            f"a{(number_of_stats*3)+9}:{end_column}{number_of_stats+9}"
-            
-        ]
-        black_bars_vertical = [
-            f"a1:{end_column}1",
-            f"{end_column}1:{end_column}{number_of_stats+10}"
-        ]
-        body = {
-            "requests": []
-        }
-        #black vertical lines
-        body["requests"].append(
-            {
-                "updateDimensionProperties": {
-                    "range": {
-                        "sheetId": self.current_sheet.id,
-                        "dimension": "COLUMNS",
-                        "startIndex": 0,
-                        "endIndex": 1
-                    },
-                    "properties": {
-                        "pixelSize": 10
-                    },
-                    "fields": "pixelSize"
-                }
-            }
-        )
-        body["requests"].append(
-            {
-                "updateDimensionProperties": {
-                    "range": {
-                        "sheetId": self.current_sheet.id,
-                        "dimension": "COLUMNS",
-                        "startIndex": number_of_players+3,
-                        "endIndex": number_of_players+4
-                    },
-                    "properties": {
-                        "pixelSize": 10
-                    },
-                    "fields": "pixelSize"
-                }
-            }
-        )
-        #black horizontal lines
-        body["requests"].append(
-            {
-                "updateDimensionProperties": {
-                    "range": {
-                        "sheetId": self.current_sheet.id,
-                        "dimension": "ROWS",
-                        "startIndex": 0,
-                        "endIndex": 1
-                    },
-                    "properties": {
-                        "pixelSize": 10
-                    },
-                    "fields": "pixelSize"
-                }
-            }
-        )
-        body["requests"].append(
-            {
-                "updateDimensionProperties": {
-                    "range": {
-                        "sheetId": self.current_sheet.id,
-                        "dimension": "ROWS",
-                        "startIndex": number_of_stats+3,
-                        "endIndex": number_of_stats+4
-                    },
-                    "properties": {
-                        "pixelSize": 10
-                    },
-                    "fields": "pixelSize"
-                }
-            }
-        )
-        body["requests"].append(
-            {
-                "updateDimensionProperties": {
-                    "range": {
-                        "sheetId": self.current_sheet.id,
-                        "dimension": "ROWS",
-                        "startIndex": (number_of_stats*2)+6,
-                        "endIndex": (number_of_stats*2)+7
-                    },
-                    "properties": {
-                        "pixelSize": 10
-                    },
-                    "fields": "pixelSize"
-                }
-            }
-        )
-        body["requests"].append(
-            {
-                "updateDimensionProperties": {
-                    "range": {
-                        "sheetId": self.current_sheet.id,
-                        "dimension": "ROWS",
-                        "startIndex": (number_of_stats*3)+8,
-                        "endIndex": (number_of_stats*3)+9
-                    },
-                    "properties": {
-                        "pixelSize": 10
-                    },
-                    "fields": "pixelSize"
-                }
-            }
-        )
-        #merging header cells
-        body["requests"].append(
-            {
-                "mergeCells": {
-                    "mergeType": "MERGE_ALL",
-                    "range": {
-                        "sheetId": self.current_sheet.id,
-                        "startRowIndex": 1,
-                        "endRowIndex": 2,
-                        "startColumnIndex": 1,
-                        "endColumnIndex": number_of_players+2
-                    }
-                }
-            }
-        )
-        body["requests"].append(
-            {
-                "mergeCells": {
-                    "mergeType": "MERGE_ALL",
-                    "range": {
-                        "sheetId": self.current_sheet.id,
-                        "startRowIndex": (number_of_stats*2)+7,
-                        "endRowIndex": (number_of_stats*2)+8,
-                        "startColumnIndex": 1,
-                        "endColumnIndex": number_of_players+2
-                    }
-                }
-            }
-        ) 
-        body["requests"].append(
-            {
-                "mergeCells": {
-                    "mergeType": "MERGE_ALL",
-                    "range": {
-                        "sheetId": self.current_sheet.id,
-                        "startRowIndex": (number_of_stats*3)+10,
-                        "endRowIndex": (number_of_stats*3)+11,
-                        "startColumnIndex": 1,
-                        "endColumnIndex": number_of_players+2
-                    }
-                }
-            }
-        )
-        self.worksheet.batch_update(body)
-
-        pass
-    
-    def format_xp_board_step_2(self, members_list:dict, recorded_stats:list):
-        cell_formats = []
-        number_of_players = len(members_list)
-        number_of_stats = len(recorded_stats["All"])
-        black_bars_horizontal = [
-            f"a1:{get_column_letter(number_of_players+4)}1",
-            f"a{number_of_stats+4}:{get_column_letter(number_of_players+4)}{number_of_stats+4}",
-            f"a{(number_of_stats*2)+7}:{get_column_letter(number_of_players+4)}{(number_of_stats*2)+7}",
-            f"a{(number_of_stats*3)+9}:{get_column_letter(number_of_players+4)}{(number_of_stats*3)+9}"
-            
-        ]
-        black_bars_vertical = [
-            f"a1:a{(number_of_stats*3)+9}",
-            f"{get_column_letter(number_of_players+4)}1:{get_column_letter(number_of_players+4)}{(number_of_stats*3)+9}"
-        ]
-
-        for bar_range in black_bars_horizontal+black_bars_vertical:
-            cell_formats.append(
-                {
-                    "range": bar_range,
-                    "format": {
-                        "textFormat":{
-                            "bold": True,
-                            "fontSize": 10
-                        },
-                        "backgroundColor": {
-                            "red": 0/255,
-                            "green": 0/255,
-                            "blue": 0/255
-                        },
-                        "horizontalAlignment": "CENTER",
-                        "verticalAlignment": "MIDDLE",
-                        "wrapStrategy": "WRAP"
-                    }
-                }
-            )    
-        #Bolden usernames and mvp points headers
-        print(cell_formats)
-        self.current_sheet.batch_format(cell_formats)
-    
-    def format_xp_board_step_3(self, members_list:dict, categories:list):
-        cell_updates = []
-        number_of_categories = len(categories["All"])
-        current_row = 2
-        for x in range(3):
-            current_column = 2
-            match x:
-                case 0:
-                    cell_updates.append(Cell(current_row, current_column, "Beginning Values"))
-                case 1:
-                    cell_updates.append(Cell(current_row, current_column, "Current Values"))
-                case 2:
-                    cell_updates.append(Cell(current_row, current_column, "Comparison Values"))
-            current_row+=1
-            cell_updates.append(Cell(current_row, current_column, "Username"))
-            for member in members_list:
-                current_column+=1
-                cell_updates.append(Cell(current_row, current_column, member))
-            current_column+=1
-            cell_updates.append(Cell(current_row, current_column, "Total"))
-            current_row+=2+number_of_categories
-        self.current_sheet.update_cells(cell_updates)
-    
-    def write_initial_to_xp_board(self, pulled_stats:dict, categories:dict):
-        cell_updates = []
-        number_of_stats = len(categories["All"])
-        current_row = 3
-        for category in categories["All"]:
-            current_column = 2
-            current_row+=1
-            cell_updates.append(Cell(current_row, current_column, category))
-            for player in pulled_stats:
-                current_column+=1
-                try:
-                    cell_updates.append(Cell(current_row, current_column, pulled_stats[player][category]["xp"]))
-                except:
-                    cell_updates.append(Cell(current_row, current_column, pulled_stats[player][category]["score"]))
-        current_row = (number_of_stats*2)+8
-        current_column=2
-        for category in categories["All"]:
-            current_row+=1
-            cell_updates.append(Cell(current_row, current_column, category))
-        self.current_sheet.update_cells(cell_updates)
-    
-    def create_xp_board(self, members_list:dict, categories, pulled_stats=None):
-        self.change_to_sheet("XP Page", True)
-        self.format_xp_board_step_1(members_list, categories)
-        self.format_xp_board_step_2(members_list, categories)
-        self.format_xp_board_step_3(members_list, categories)
-        if pulled_stats!=None:
-            self.write_initial_to_xp_board(pulled_stats, categories)
-
-    def update_current_xp(self, pulled_stats:list, categories:dict):
-        cell_updates = []
-        number_of_stats = len(categories["All"])
-        current_row = number_of_stats+6
-        for category in categories["All"]:
-            current_column = 2
-            current_row+=1
-            cell_updates.append(Cell(current_row, current_column, category))
-            for player in pulled_stats:
-                current_column+=1
-                try:
-                    cell_updates.append(Cell(current_row, current_column, pulled_stats[player][category]["xp"]))
-                except:
-                    cell_updates.append(Cell(current_row, current_column, pulled_stats[player][category]["score"]))
-        self.current_sheet.update_cells(cell_updates)
-
     def create_rules(self):
         pass
 
 
 if __name__ == "__main__":
-    # member_list = open_json("./config/required/all_members.json")
-    # categories = open_json("./config/required/categories.json")
-    # test_stats = open_json("./config/daily_stats/May-17-2023.json")
-    # board_template = open_json("./config/required/board_template.json")
+    my_db = database_connection()
+    member_list = open_json("./config/required/all_members.json")
+    categories = open_json("./config/required/categories.json")
     board_layout = open_json("./config/generated/team1/board_layout.json")
-    
+    board_template = database_connection.df_to_dict(my_db.load_template(1))
     team_1_sheets = google_sheets("./config/required/credentials.json", "Team 1")
 
-    # team_1_sheets.create_scoreboard(member_list, board_template)
+    team_1_sheets.create_scoreboard(member_list, board_template)
     # team_1_sheets.create_xp_board(members_list=member_list, categories=categories, pulled_stats=None)
 
     #team_1_sheets.update_current_xp(pulled_stats=test_stats, categories=categories)
-    #team_1_sheets.write_to_scoreboard(board_layout, "h10")
-    team_1_sheets.complete_tile(board_layout, "j9")
+    # team_1_sheets.write_to_scoreboard(board_layout, "h8")
+    team_1_sheets.complete_tile(board_layout, "i10")
