@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from discord import app_commands
 from google_sheets import *
 
-load_dotenv("./config/required/.env")
+load_dotenv()
 token = os.getenv('DISCORD_TOKEN')
 my_guild = os.getenv('DISCORD_GUILD')
 my_guild_id = os.getenv('DISCORD_GUILD_ID')
