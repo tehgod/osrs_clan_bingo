@@ -37,7 +37,7 @@ def approver_status(discord_id):
 
 print(my_guild_id)
 
-@tree.command(name = "update-xp", description = "Updates teams xp and scores", guild=discord.Object(id=my_guild_id)) #Add the guild ids in which the slash command will appear. If it should be in all, remove the argument, but note that it will take some time (up to an hour) to register the command if it's for all guilds.
+@tree.command(name = "update-xp", description = "Updates teams xp and scores", guild=discord.Object(id=my_guild_id))
 async def first_command(interaction):
     await interaction.response.send_message("Running updates now.")
     await interaction.followup.send("Finished.")
