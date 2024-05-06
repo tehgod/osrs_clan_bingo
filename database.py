@@ -2,7 +2,6 @@ import os, os.path
 from sqlalchemy import create_engine, text
 import pandas as pd
 from dotenv import load_dotenv
-
 load_dotenv()
 
 
@@ -32,22 +31,22 @@ class database_connection:
         self.load_engine()
         result = pd.read_sql(f"""SELECT bbt.Cell, lbd.Name as Difficulty  from BingoBoardTemplate bbt inner join LookupBingoDifficulty lbd on bbt.Difficulty =lbd.Id WHERE Template ={template_number}""", self.engine)
         self.engine.dispose()
-        return result
+        return database_connection.df_to_dict(result)
     
     def load_team_members(self, team_number:int = None):
-        base_query = """SELECT * from BingoTeams bt"""
+        base_query = """SELECT * from BingoTeamMembers bt"""
         if team_number != None:
             base_query += f" WHERE Team = {team_number}"
         self.load_engine()
         result = pd.read_sql(base_query, self.engine)
         self.engine.dispose()
-        return result 
+        return database_connection.df_to_dict(result) 
     
     def load_tasks(self):
         self.load_engine()
         result = pd.read_sql(f"""SELECT bt.Id, lbd.Name AS Difficulty, bt.Task FROM BingoTasks bt INNER JOIN LookupBingoDifficulty lbd ON bt.Difficulty = lbd.Id""", self.engine)
         self.engine.dispose()
-        return result
+        return database_connection.df_to_dict(result)
     
     def generate_board_layout(self, template_number, team_number=0):
         try:
@@ -59,5 +58,25 @@ class database_connection:
         except:
             return False
 
-# my_db = database_connection()
-# print(database_connection.df_to_dict(my_db.load_template(1)))
+    def load_board_layout(self, team_number):
+        query = (f"""SELECT Cell, bt.Task , Status from BingoCurrentLayouts bcl 
+            INNER JOIN BingoTasks bt on bcl.TaskId=bt.Id
+            WHERE Team = {team_number}""")
+        self.load_engine()
+        result = pd.read_sql(query, self.engine)
+        self.engine.dispose()
+        return database_connection.df_to_dict(result)
+
+    def load_team_credentials(self, team_number:int=None):
+        base_query = (f"""SELECT * FROM BingoTeams bt""")
+        if team_number != None:
+            base_query += f" WHERE bt.Id ={team_number}"
+        self.load_engine()
+        result = pd.read_sql(base_query, self.engine)
+        self.engine.dispose()
+
+        return database_connection.df_to_dict(result)
+    
+if __name__ == "__main__":
+    my_db = database_connection()
+    print(my_db.load_team_credentials(1))

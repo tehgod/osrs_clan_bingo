@@ -12,8 +12,9 @@ def open_json(filepath:str):
         return json.load(myfile)
 
 class google_sheets:
-    def __init__(self, google_credentials_filepath:str, spreadsheet_name:str):
-        self.gspread_client = gspread.service_account(filename=google_credentials_filepath)
+    def __init__(self, sheets_json_data:dict, spreadsheet_name:str):
+
+        self.gspread_client = gspread.service_account_from_dict(sheets_json_data)
         self.worksheet = self.gspread_client.open(spreadsheet_name)
         self.current_sheet = self.worksheet.get_worksheet(0)
 
@@ -578,10 +579,11 @@ class google_sheets:
 
 if __name__ == "__main__":
     my_db = database_connection()
-    member_list = database_connection.df_to_dict(my_db.load_team_members(1))
-    board_layout = database_connection.df_to_dict(my_db.load_board_layout(1))
-    board_template = database_connection.df_to_dict(my_db.load_template(1))
-    team_1_sheets = google_sheets("./config/required/credentials.json", "Team 1")
+    member_list = my_db.load_team_members(1)
+    board_layout = my_db.load_board_layout(1)
+    board_template = my_db.load_template(1)
+    team_1_creds = my_db.load_team_credentials(1)
+    team_1_sheets = google_sheets(json.loads(team_1_creds[0]["GoogleSheetAuth"]), team_1_creds[0]["Name"])
 
     team_1_sheets.create_scoreboard(member_list, board_template)
     team_1_sheets.complete_tile(board_layout, "i10")
