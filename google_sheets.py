@@ -566,7 +566,8 @@ class google_sheets:
         for tile in surrounding_tiles:
             if tile in [tile["Cell"] for tile in board_layout]:
                 valid_surrounding_tiles.append(tile)
-        self.write_to_scoreboard(board_layout, valid_surrounding_tiles)            
+        self.write_to_scoreboard(board_layout, valid_surrounding_tiles)
+        return valid_surrounding_tiles      
 
     def create_scoreboard(self, members_list:dict, board_template:dict):
         self.change_to_sheet("Scoreboard", True)

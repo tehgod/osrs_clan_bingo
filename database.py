@@ -4,6 +4,14 @@ import pandas as pd
 from dotenv import load_dotenv
 load_dotenv()
 
+class TeamMember:
+    def __init__(self, member:dict):
+        self.Team = member["Team"]
+        self.Username = member["Username"]
+        self.Approver = member["Approver"]
+        self.DiscordUserId = member["DiscordUserId"]
+        pass
+
 
 class database_connection:
     def __init__(self):
@@ -29,18 +37,23 @@ class database_connection:
     
     def load_template(self, template_number):
         self.load_engine()
-        result = pd.read_sql(f"""SELECT bbt.Cell, lbd.Name as Difficulty  from BingoBoardTemplate bbt inner join LookupBingoDifficulty lbd on bbt.Difficulty =lbd.Id WHERE Template ={template_number}""", self.engine)
+        result = pd.read_sql(f"""SELECT bbt.Cell, lbd.Name as Difficulty from BingoBoardTemplate bbt inner join LookupBingoDifficulty lbd on bbt.Difficulty =lbd.Id WHERE Template ={template_number}""", self.engine)
         self.engine.dispose()
         return database_connection.df_to_dict(result)
     
     def load_team_members(self, team_number:int = None):
-        base_query = """SELECT * from BingoTeamMembers bt"""
+        base_query = ("""SELECT Team, btm.Username, Approver, DiscordUserId from BingoTeamMembers btm
+                        Inner join Usernames u on u.Username =btm.Username 
+                        INNER JOIN Users u2 on u2.Id = u.UserId """)
         if team_number != None:
             base_query += f" WHERE Team = {team_number}"
         base_query += " ORDER BY Team, Username"
         self.load_engine()
         result = pd.read_sql(base_query, self.engine)
         self.engine.dispose()
+        members = []
+        for member in database_connection.df_to_dict(result):
+            members.append(TeamMember(member))
         return database_connection.df_to_dict(result) 
     
     def load_tasks(self):
@@ -60,7 +73,7 @@ class database_connection:
             return False
 
     def load_board_layout(self, team_number):
-        query = (f"""SELECT Cell, bt.Task , Status from BingoCurrentLayouts bcl 
+        query = (f"""SELECT Cell, bt.Task , bcl.TaskId, Status, bcl.Template from BingoCurrentLayouts bcl 
             INNER JOIN BingoTasks bt on bcl.TaskId=bt.Id
             WHERE Team = {team_number}""")
         self.load_engine()
@@ -78,18 +91,27 @@ class database_connection:
 
         return database_connection.df_to_dict(result)
     
-    def update_task_progress(self, team_number, task_id, completion_status):
+    def update_task_progress(self, team_number, cell, completion_status):
         try:
             self.load_engine()
             with self.engine.connect() as con:
-                con.execute(text(f"""Update BingoCurrentLayouts SET Status = {completion_status} where Team = {team_number} and TaskId = {task_id}"""))
+                query = f"""Update BingoCurrentLayouts SET Status = {completion_status} where Team = {team_number} and Cell = '{cell}'"""
+                con.execute(text(query))
                 con.commit()
             return True
         except:
             return False
 
-
-
+    def get_rules(self, task_id):
+        query = (f"""SELECT Rule FROM BingoTasks bt inner join
+                BingoTasksRules btr on bt.Id =btr.TasksId 
+                where TasksId={task_id}""")
+        self.load_engine()
+        result = pd.read_sql(query, self.engine)
+        self.engine.dispose()
+        return database_connection.df_to_dict(result)
+    
 if __name__ == "__main__":
     my_db = database_connection()
-    print(my_db.update_task_progress(1, 7, 1))
+    members = my_db.load_team_members()
+    print("done")

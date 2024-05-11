@@ -67,7 +67,7 @@ async def first_command(interaction, tile: str):
     else:
         await interaction.response.send_message(f"Incorrect permissions. You need admin permissions for this command")
 
-@tree.command(name = "run-setup", guild=discord.Object(id=my_guild_id))
+@tree.command(name = "bingo-generate-board", guild=discord.Object(id=my_guild_id))
 async def first_command(interaction, tile: str):
     if interaction.user.id == admin_discord_id:
         await interaction.response.send_message(f"Revealing tile {tile}")
