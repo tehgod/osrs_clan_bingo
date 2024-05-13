@@ -483,7 +483,7 @@ class google_sheets:
         current_row = 6
         for member in members_list:
             current_row+=1
-            cell_updates.append(Cell(current_row, 2, member["Username"]))
+            cell_updates.append(Cell(current_row, 2, member.Username))
         #add text for tiles, points, and respective headers
         cell_updates.append(Cell(2, 5, "Task"))
         cell_updates.append(Cell(2, 6, "Beginner"))

@@ -48,8 +48,8 @@ if __name__ == "__main__":
     team_ids = []
     team_members = my_db.load_team_members()
     for user in team_members:
-        if user["Team"] not in team_ids:
-            team_ids.append(user["Team"])
+        if user.Team not in team_ids:
+            team_ids.append(user.Team)
     
 
     #build team objects
@@ -79,8 +79,8 @@ if __name__ == "__main__":
         for team in teams:
             team_channel_id = int(team.creds["DiscordChannelId"])
             for user in team.members:
-                if int(user["DiscordUserId"])==interaction.user.id:
-                    if user["Approver"]==1:
+                if int(user.DiscordUserId)==interaction.user.id:
+                    if user.Approver==1:
                         if team_channel_id==interaction.channel_id:
                             await interaction.response.send_message(f"Revealing tile {tile}")
                             team.googleSheets.write_to_scoreboard(team.layout, tile)

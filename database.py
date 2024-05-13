@@ -54,7 +54,7 @@ class database_connection:
         members = []
         for member in database_connection.df_to_dict(result):
             members.append(TeamMember(member))
-        return database_connection.df_to_dict(result) 
+        return members
     
     def load_tasks(self):
         self.load_engine()
